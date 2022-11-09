@@ -1,0 +1,196 @@
+===============================service==============================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Services;
+
+namespace Service2
+{
+    /// <summary>
+    /// Summary description for WebService1
+    /// </summary>
+    [WebService(Namespace = "http://tempuri.org/")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    // [System.Web.Script.Services.ScriptService]
+    public class WebService1 : System.Web.Services.WebService
+    {
+        public static List<Student> students = new List<Student>();
+        [WebMethod]
+        public string HelloWorld()
+        {
+            return "Hello World";
+        }
+
+        [WebMethod]
+        public bool add(string ma, string ten, string sdt)
+        {
+            try
+            {
+                Student student = new Student(ma, ten, sdt);
+                students.Add(student);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                return false;
+
+            }  
+        }
+
+        [WebMethod]
+        public List<Student> getAll()
+        {
+            return students;
+        }
+
+        [WebMethod]
+        public void update(string ma,string ten, string sdt)
+        {
+            foreach(Student item in students)
+            {
+                if(item.ma == ma)
+                {
+                    item.ten = ten;
+                    item.sdt = sdt;
+                }
+            }
+        }
+
+        [WebMethod]
+        public void delete(string ma)
+        {
+            foreach (Student item in students)
+            {
+                if (item.ma == ma)
+                {
+                    students.Remove(item);
+                    break;
+                }
+            }
+        }
+    }
+}
+==========================================client=============================================
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Student = ClientOnTap.ServiceReference1.Student;
+
+namespace ClientOnTap
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            init();
+
+        }
+        void init()
+        {
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            List<Student> list = service.getAll().ToList();
+            listBox1.Items.Clear();
+            foreach (Student item in list)
+            {
+                Console.WriteLine(item.ma);
+                listBox1.Items.Add(item.ma);
+            }
+        }
+
+        private void btnthem_Click(object sender, EventArgs e)
+        {
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            service.add(txtma.Text, txtTen.Text, txtsdt.Text);
+            listBox1.Items.Add(txtma.Text);
+            txtma.Text = "";
+            txtTen.Text = "";
+            txtsdt.Text = "";
+
+        }
+
+        private void btnxoa_Click(object sender, EventArgs e)
+        {
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            service.delete(txtma.Text);
+            init();
+            txtma.Text = "";
+            txtTen.Text = "";
+            txtsdt.Text = "";
+
+
+
+        }
+
+        private void btnsua_Click(object sender, EventArgs e)
+        {
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            service.update(txtma.Text, txtTen.Text, txtsdt.Text);
+            init();
+            txtma.Text = "";
+            txtTen.Text = "";
+            txtsdt.Text = "";
+
+        }
+
+        private void btnsearch_Click(object sender, EventArgs e)
+        {
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            List<Student> list = service.getAll().ToList();
+            bool flag = false;
+            foreach(Student item in list)
+            {
+                if(item.sdt == txttim.Text)
+                {
+                    flag = true;
+                    txtma.Text = item.ma;
+                    txtTen.Text = item.ten;
+                    txtsdt.Text = item.sdt;
+                }
+            }
+            if(flag == false)
+            {
+                txtma.Text = "";
+                txtTen.Text = "";
+                txtsdt.Text = "";
+            }
+        }
+
+        private void btnclear_Click(object sender, EventArgs e)
+        {
+            txtma.Text = "";
+            txtTen.Text = "";
+            txtsdt.Text = "";
+        }
+
+        private void btnthoat_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void btnxem_Click(object sender, EventArgs e)
+        {
+            string ma = (string)listBox1.SelectedItem;
+            ClientOnTap.ServiceReference1.WebService1SoapClient service = new ServiceReference1.WebService1SoapClient();
+            List<Student> list = service.getAll().ToList();
+            foreach(Student item in list)
+            {
+                if(item.ma == ma)
+                {
+                    txtma.Text = item.ma;
+                    txtTen.Text = item.ten;
+                    txtsdt.Text = item.sdt;
+                }
+            }
+        }
+    }
+}
